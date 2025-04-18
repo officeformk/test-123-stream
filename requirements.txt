@@ -1,0 +1,10 @@
+streamlit 
+fastapi
+uvicorn
+pydantic 
+python-dotenv 
+langchain 
+langchain-community 
+langchain-ollama 
+pymupdf
+faiss-cpu
