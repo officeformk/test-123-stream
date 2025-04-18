@@ -1,10 +1,12 @@
 # SQLite setup for doctors and patients
 # backend/db.py
+# Add time to imports at the top
 import sqlite3
 from pathlib import Path
 from datetime import datetime, timedelta
 import random
 import string
+import time  # Add this import
 
 DB_PATH = Path("chat_history.db")
 
@@ -70,6 +72,16 @@ class Database:
             total_queries INTEGER DEFAULT 0
         )
         ''')
+        
+        self.cursor.execute('''
+        CREATE TABLE IF NOT EXISTS patients (
+            id TEXT,
+            doctor_email TEXT,
+            name TEXT,
+            created_at TEXT,
+            PRIMARY KEY (id, doctor_email)
+        )
+        ''')
         self.conn.commit()
 
     def generate_otp(self):
@@ -110,3 +122,20 @@ class Database:
             (today, daily_count, total_count, email)
         )
         self.conn.commit()
+
+    def get_patients(self, doctor_email):
+        self.cursor.execute("SELECT name FROM patients WHERE doctor_email=?", (doctor_email,))
+        patients = [row[0] for row in self.cursor.fetchall()]
+        if not patients:
+            return ["No patients"]
+        return patients
+
+    def add_patient(self, doctor_email, patient_name):
+        patient_id = f"P{int(time.time())}"
+        created_at = datetime.utcnow().isoformat()
+        self.cursor.execute(
+            "INSERT INTO patients (id, doctor_email, name, created_at) VALUES (?, ?, ?, ?)",
+            (patient_id, doctor_email, patient_name, created_at)
+        )
+        self.conn.commit()
+        return patient_id

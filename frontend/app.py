@@ -38,7 +38,7 @@ with st.sidebar:
                 if st.button("Verify OTP"):
                     if auth.verify_otp(doctor_email, otp):
                         st.success("Account verified successfully!")
-                        st.experimental_rerun()
+                        st.rerun()
                     else:
                         st.error("Invalid OTP")
                 st.stop()
@@ -70,11 +70,11 @@ with st.sidebar:
         patients = db.get_patients(doctor_email)
         selected_patient = st.selectbox("Select Patient", patients if patients else ["No patients"])
         new_patient = st.text_input("Add New Patient")
-        
+        # Replace all instances of st.experimental_rerun() with st.rerun()
         if st.button("Add Patient") and new_patient:
             db.add_patient(doctor_email, new_patient)
             st.success(f"Added patient: {new_patient}")
-            st.experimental_rerun()
+            st.rerun()
 
 # Chat interface
 if doctor_email and (selected_patient != "No patients" or new_patient):
