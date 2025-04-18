@@ -82,6 +82,16 @@ class Database:
             PRIMARY KEY (id, doctor_email)
         )
         ''')
+        
+        self.cursor.execute('''
+        CREATE TABLE IF NOT EXISTS chats (
+            doctor_email TEXT,
+            patient_id TEXT,
+            message TEXT,
+            is_user INTEGER,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        ''')
         self.conn.commit()
 
     def generate_otp(self):
@@ -139,3 +149,19 @@ class Database:
         )
         self.conn.commit()
         return patient_id
+
+    def get_chat_history(self, doctor_email, patient_name):
+        self.cursor.execute("""
+            SELECT message, is_user 
+            FROM chats 
+            WHERE doctor_email=? AND patient_id=?
+            ORDER BY rowid ASC
+        """, (doctor_email, patient_name))
+        return self.cursor.fetchall()
+
+    def save_chat(self, doctor_email, patient_id, message, is_user):
+        self.cursor.execute("""
+            INSERT INTO chats (doctor_email, patient_id, message, is_user) 
+            VALUES (?, ?, ?, ?)
+        """, (doctor_email, patient_id, message, is_user))
+        self.conn.commit()

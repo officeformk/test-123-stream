@@ -8,3 +8,4 @@ langchain-community
 langchain-ollama 
 pymupdf
 faiss-cpu
+streamlit-chat
