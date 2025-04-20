@@ -9,3 +9,7 @@ langchain-ollama
 pymupdf
 faiss-cpu
 streamlit-chat
+openai==0.28
+tiktoken
+matplotlib
+plotly

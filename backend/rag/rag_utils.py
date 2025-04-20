@@ -1,46 +1,72 @@
-# RAG logic with FAISS & LangChain
-import os
-from langchain_community.document_loaders import PyMuPDFLoader
-from langchain_community.vectorstores import FAISS
-from langchain_ollama import OllamaEmbeddings, OllamaLLM
-from langchain.chains import RetrievalQA
+# # RAG logic with FAISS & LangChain
+# import os
+# from dotenv import load_dotenv
+# from langchain_community.document_loaders import PyMuPDFLoader
+# from langchain_community.vectorstores import FAISS
+# import openai  # Import OpenAI directly
+# from langchain.chains import RetrievalQA
+# from langchain.chat_models import ChatOpenAI
 
-PDF_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 
-                       "resources", "Kent Repertory 1.pdf")
-INDEX_PATH = os.path.join(os.path.dirname(__file__), "faiss_index_homeo")
+# # Load environment variables
+# load_dotenv()
 
-def build_vector_index():
-    if not os.path.exists(PDF_PATH):
-        raise FileNotFoundError(f"PDF file not found at {PDF_PATH}")
+# PDF_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 
+#                        "resources", "Kent Repertory 1.pdf")
+# INDEX_PATH = os.path.join(os.path.dirname(__file__), "faiss_index_homeo")
+
+# def build_vector_index():
+#     if not os.path.exists(PDF_PATH):
+#         raise FileNotFoundError(f"PDF file not found at {PDF_PATH}")
     
-    loader = PyMuPDFLoader(PDF_PATH)
-    docs = loader.load_and_split()
-    embeddings = OllamaEmbeddings(model="nomic-embed-text")
-    db = FAISS.from_documents(docs, embeddings)
-    db.save_local(INDEX_PATH)
-    print("✅ FAISS index built and saved.")
+#     loader = PyMuPDFLoader(PDF_PATH)
+#     docs = loader.load_and_split()
 
-def get_retriever():
-    if not os.path.exists(INDEX_PATH):
-        build_vector_index()
+#     # Use OpenAI embeddings
+#     def get_openai_embeddings(texts):
+#         response = openai.Embedding.create(
+#             model="text-embedding-ada-002",
+#             input=texts
+#         )
+#         return [embedding['embedding'] for embedding in response['data']]
+
+#     embeddings = get_openai_embeddings([doc.page_content for doc in docs])
+#     db = FAISS.from_documents(docs, embeddings)
+#     db.save_local(INDEX_PATH)
+#     print("✅ FAISS index built and saved.")
+
+# def get_retriever():
+#     if not os.path.exists(INDEX_PATH):
+#         build_vector_index()
     
-    embeddings = OllamaEmbeddings(model="nomic-embed-text")
-    db = FAISS.load_local(INDEX_PATH, embeddings, allow_dangerous_deserialization=True)
-    return db.as_retriever()
+#     # Load documents again to generate embeddings
+#     loader = PyMuPDFLoader(PDF_PATH)
+#     docs = loader.load_and_split()
 
-def initialize_qa_chain():
-    retriever = get_retriever()
-    llm = OllamaLLM(model="mistral")
-    return RetrievalQA.from_chain_type(llm=llm, retriever=retriever)
+#     # Use OpenAI embeddings
+#     def get_openai_embeddings(texts):
+#         response = openai.Embedding.create(
+#             model="text-embedding-ada-002",
+#             input=texts
+#         )
+#         return [embedding['embedding'] for embedding in response['data']]
 
-qa_chain = initialize_qa_chain()
+#     embeddings = get_openai_embeddings([doc.page_content for doc in docs])
+#     db = FAISS.load_local(INDEX_PATH, embeddings, allow_dangerous_deserialization=True)
+#     return db.as_retriever()
 
-def get_rag_response(query: str) -> str:
-    try:
-        result = qa_chain.invoke({"query": query})
-        return result["result"]
-    except Exception as e:
-        return f"Error processing query: {str(e)}"
+# def initialize_qa_chain():
+#     retriever = get_retriever()
+#     llm = ChatOpenAI(model_name="gpt-3.5-turbo", openai_api_key=os.getenv("OPENAI_API_KEY"))
+#     return RetrievalQA.from_chain_type(llm=llm, retriever=retriever)
 
-# Ensure the function is available for import
-__all__ = ['get_rag_response']
+# qa_chain = initialize_qa_chain()
+
+# def get_rag_response(query: str) -> str:
+#     try:
+#         result = qa_chain({"query": query})
+#         return result.get("result", "No response generated.")
+#     except Exception as e:
+#         return f"Error processing query: {str(e)}"
+
+# # Ensure the function is available for import
+# __all__ = ['get_rag_response']

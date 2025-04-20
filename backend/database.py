@@ -160,6 +160,9 @@ class Database:
         return self.cursor.fetchall()
 
     def save_chat(self, doctor_email, patient_id, message, is_user):
+        # Ensure message is a string before inserting into the database
+        if isinstance(message, dict):
+            message = str(message)
         self.cursor.execute("""
             INSERT INTO chats (doctor_email, patient_id, message, is_user) 
             VALUES (?, ?, ?, ?)

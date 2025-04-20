@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
-from backend.rag.rag_utils import get_rag_response
+# from backend.rag.rag_utils import get_rag_response
 from backend.database import Database
 from backend.auth import Auth, RegisterRequest, OTPVerifyRequest, ChatRequest
 
@@ -28,19 +28,19 @@ def verify_otp(request: OTPVerifyRequest):
     auth.verify_otp(request)
     return {"message": "OTP verified. You are now verified."}
 
-@app.post("/chat")
-def chat(request: ChatRequest):
-    access_info = auth.validate_chat_access(request.email)
-    response = get_rag_response(request.query)
+# @app.post("/chat")
+# def chat(request: ChatRequest):
+#     access_info = auth.validate_chat_access(request.email)
+#     response = get_rag_response(request.query)
     
-    db.update_query_count(
-        request.email, 
-        access_info["daily_count"] + 1, 
-        access_info["total_count"] + 1, 
-        datetime.utcnow().date().isoformat()
-    )
+#     db.update_query_count(
+#         request.email, 
+#         access_info["daily_count"] + 1, 
+#         access_info["total_count"] + 1, 
+#         datetime.utcnow().date().isoformat()
+#     )
     
-    return {
-        "response": response, 
-        "remaining": access_info["limit"] - (access_info["daily_count"] + 1)
-    }
+#     return {
+#         "response": response, 
+#         "remaining": access_info["limit"] - (access_info["daily_count"] + 1)
+#     }

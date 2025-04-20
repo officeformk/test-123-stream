@@ -181,14 +181,22 @@ if st.session_state.authenticated and (selected_patient != "No patients" or new_
         message(msg["content"], is_user=(msg["role"] == "user"), key=f"msg_{i}")
     st.markdown('</div>', unsafe_allow_html=True)
 
+    # Initialize session state for first-time prompt
+    if 'first_prompt' not in st.session_state:
+        st.session_state.first_prompt = True
+    
     # Chat input (sticky at bottom)
     st.markdown('<div class="chat-input">', unsafe_allow_html=True)
     if prompt := st.chat_input("Ask your question about homeopathy..."):
-        # Add user message
+    # Append additional text only for the first prompt
+        if st.session_state.first_prompt:
+            prompt += ", suggest a next related question or homeopathy remedy on it please."
+        st.session_state.first_prompt = False  # Set to False after first use
+    
         st.session_state.messages.append({"role": "user", "content": prompt})
         message(prompt, is_user=True, key=f"user_{len(st.session_state.messages)}")
         db.save_chat(st.session_state.doctor_email, patient_id, prompt, 1)
-
+    
         # Get bot response
         with st.spinner("Thinking..."):
             response = run_query(prompt, st.session_state.messages)
