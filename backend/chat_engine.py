@@ -58,27 +58,20 @@ def run_query(query, chat_history):
     try:
         logger.debug(f"Running query: {query}")
 
-        # Build a manual prompt using past messages
-        context_window = 3  # Use last 3 user-assistant pairs
-        context = ""
-        pairs = [(chat_history[i]["content"], chat_history[i+1]["content"])
-                 for i in range(0, len(chat_history)-1, 2)
-                 if chat_history[i]["role"] == "user" and chat_history[i+1]["role"] == "assistant"]
+        # Convert chat_history from [{"role": ..., "content": ...}] to [(question, answer), ...]
+        formatted_history = []
+        for i in range(0, len(chat_history) - 1, 2):
+            if chat_history[i]["role"] == "user" and chat_history[i+1]["role"] == "assistant":
+                formatted_history.append((chat_history[i]["content"], chat_history[i+1]["content"]))
 
-        for question, answer in pairs[-context_window:]:
-            context += f"User: {question}\nAssistant: {answer}\n"
+        # Run the query with history
+        result = qa_chain.invoke({
+            "question": query,
+            "chat_history": formatted_history
+        })
 
-        context += f"User: {query}\nAssistant:"
-
-        # Run query with enriched context
-        result = qa_chain.invoke({"query": context})
-        response_text = result.get("result", "No response generated.")
+        response_text = result.get("answer", "No response generated.")
         logger.debug(f"LLM response: {response_text}")
-
-        # Add to chat history
-        chat_history.append({"role": "user", "content": query})
-        chat_history.append({"role": "assistant", "content": response_text})
-
         return response_text
 
     except Exception as e:
